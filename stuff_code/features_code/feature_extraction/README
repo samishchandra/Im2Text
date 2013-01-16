@@ -1,0 +1,36 @@
+The main function to call is extract_feature_dh.m
+
+The input is:
+imdir - directory containing input images
+out_dir - directory to output .mat output
+filestr - (optional) string containing extension of input filetype - default '.jpg'
+
+For each image in the directory, the code computes quantized descriptors for the entire image.
+
+The output comes in 2 forms:
+Color/texture (<fname>_tc.mat) - a map that gives the cluster index for each pixel.
+HOG (<fname>_hog.mat) - 4 vectors
+   x,y give the pixel index
+   s gives the HOG scale (we don't use this)
+   idx - cluster index
+
+   (Be sure to add the feature_extraction directory/sub-directories to the path)
+
+% After running the extraction code, you can compute the histogram features for a given bounding box:
+
+   hog = load('filename_hog.mat');
+   tc = load('filename_tc.mat');
+
+   % A bounding box with dimensions: x:200, y:100 with the top left corner at (1,1)
+   box = [1 1 200 100]; %This is: [x_min y_min x_max y_max]
+
+   hog_ind = hog.x >= box(1) & hog.y >= box(2) & hog.x <= box(3) & hog.y <= box(4);
+
+   feat_hog = hist(hog.idx(hog_ind),1:1000);
+   feat_hog_norm = feat_hog/norm(feat_hog);
+
+   feat_color = hist(tc.colorim(box(2):box(4), box(1):box(3)),1:128);
+   feat_color_norm = feat_color/norm(feat_color);
+
+   feat_texture = hist(tc.textonim(box(2):box(4), box(1):box(3)),1:256);
+   feat_texture_norm = feat_texture/norm(feat_texture);
